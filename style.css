@@ -1,0 +1,1050 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&family=Share+Tech+Mono&display=swap');
+
+:root {
+  --bg: #0a0c10;
+  --bg2: #0f1318;
+  --bg3: #161b24;
+  --border: #2a3548;
+  --border2: #3a4a62;
+  --text: #c8d8f0;
+  --text2: #7a99c0;
+  --text3: #3a5070;
+  --accent: #e8b840;
+  --accent2: #f0d060;
+  --red: #e05040;
+  --red2: #ff7060;
+  --green: #40c870;
+  --green2: #60ff90;
+  --blue: #4080e0;
+  --blue2: #60a0ff;
+  --purple: #9060e0;
+  --purple2: #b080ff;
+  --enemy-color: #e05858;
+  --player-color: #4898e8;
+  --shadow: 0 0 20px rgba(0,0,0,0.8);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Rajdhani', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: 
+    radial-gradient(ellipse 60% 40% at 20% 80%, rgba(64,128,224,0.04) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 60% at 80% 20%, rgba(144,96,224,0.04) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* SCREEN MANAGEMENT */
+.screen { display: none; }
+.screen.active { display: flex; }
+
+/* ============ TITLE SCREEN ============ */
+#title-screen {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  gap: 48px;
+  position: relative;
+}
+
+.title-logo {
+  text-align: center;
+}
+
+.title-logo h1 {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(48px, 8vw, 96px);
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  color: var(--accent);
+  text-shadow: 0 0 40px rgba(232,184,64,0.4), 0 0 80px rgba(232,184,64,0.2);
+  animation: titlePulse 3s ease-in-out infinite;
+}
+
+.title-logo p {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 14px;
+  color: var(--text3);
+  letter-spacing: 0.4em;
+  margin-top: 8px;
+}
+
+@keyframes titlePulse {
+  0%, 100% { text-shadow: 0 0 40px rgba(232,184,64,0.4), 0 0 80px rgba(232,184,64,0.2); }
+  50% { text-shadow: 0 0 60px rgba(232,184,64,0.6), 0 0 120px rgba(232,184,64,0.3); }
+}
+
+.title-dice {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+
+.title-die {
+  width: 48px; height: 48px;
+  border: 2px solid var(--border2);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 18px;
+  color: var(--accent);
+  background: var(--bg3);
+  animation: dieFloat 2s ease-in-out infinite;
+}
+
+.title-die:nth-child(2) { animation-delay: 0.3s; }
+.title-die:nth-child(3) { animation-delay: 0.6s; }
+.title-die:nth-child(4) { animation-delay: 0.9s; }
+.title-die:nth-child(5) { animation-delay: 1.2s; }
+
+@keyframes dieFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* ============ BUTTONS ============ */
+.btn {
+  font-family: 'Cinzel', serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  padding: 12px 32px;
+  border: 1px solid var(--border2);
+  background: var(--bg3);
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.15s;
+  clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.btn:hover { border-color: var(--accent); color: var(--accent); }
+.btn:hover::after { opacity: 0.05; }
+.btn:active { transform: scale(0.97); }
+
+.btn-primary {
+  background: var(--accent);
+  color: #0a0c10;
+  border-color: var(--accent2);
+  font-size: 16px;
+  padding: 16px 48px;
+}
+
+.btn-primary:hover { background: var(--accent2); color: #0a0c10; }
+.btn-primary:hover::after { opacity: 0; }
+
+.btn-danger { border-color: var(--red); color: var(--red); }
+.btn-danger:hover { background: rgba(224,80,64,0.1); }
+
+.btn-sm { padding: 6px 16px; font-size: 12px; }
+.btn-lg { padding: 14px 40px; font-size: 16px; }
+
+/* ============ MAP / PHASE SCREEN ============ */
+#map-screen {
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+}
+
+.floor-info {
+  font-family: 'Cinzel', serif;
+  font-size: 18px;
+  color: var(--accent);
+}
+
+.stat-group {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 14px;
+}
+
+.stat-item .label { color: var(--text2); font-size: 12px; }
+.stat-item .val { color: var(--text); font-size: 16px; font-weight: 700; }
+.stat-item.hp .val { color: var(--green); }
+.stat-item.gold .val { color: var(--accent); }
+
+.hp-bar-mini {
+  width: 80px; height: 6px;
+  background: var(--bg3);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.hp-bar-mini-fill {
+  height: 100%;
+  background: var(--green);
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+
+.map-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  gap: 40px;
+}
+
+.phase-indicator {
+  display: flex;
+  gap: 8px;
+}
+
+.phase-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--border);
+  border: 1px solid var(--border2);
+  transition: all 0.3s;
+}
+
+.phase-dot.done { background: var(--text3); border-color: var(--text2); }
+.phase-dot.current { background: var(--accent); border-color: var(--accent2); box-shadow: 0 0 8px var(--accent); }
+.phase-dot.boss { background: var(--red); border-color: var(--red2); }
+
+.cards-row {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.phase-card {
+  width: 160px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+  clip-path: polygon(12px 0, 100% 0, calc(100% - 12px) 100%, 0 100%);
+}
+
+.phase-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-6px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.5), 0 0 20px rgba(232,184,64,0.1);
+}
+
+.phase-card.boss-card {
+  width: 200px;
+  border-color: var(--red);
+}
+
+.phase-card.boss-card:hover { border-color: var(--red2); box-shadow: 0 12px 32px rgba(0,0,0,0.5), 0 0 20px rgba(224,80,64,0.2); }
+
+.card-header {
+  padding: 8px 12px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  border-bottom: 1px solid var(--border);
+  color: var(--text3);
+}
+
+.card-icon {
+  font-size: 36px;
+  text-align: center;
+  padding: 20px 0 16px;
+}
+
+.card-name {
+  font-family: 'Cinzel', serif;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+  padding: 0 12px 8px;
+  color: var(--text);
+}
+
+.card-desc {
+  font-size: 11px;
+  color: var(--text3);
+  text-align: center;
+  padding: 0 12px 16px;
+  line-height: 1.5;
+}
+
+.phase-card.combat .card-name { color: var(--blue2); }
+.phase-card.chest .card-name { color: var(--accent); }
+.phase-card.gacha .card-name { color: var(--purple2); }
+.phase-card.shop .card-name { color: var(--green2); }
+.phase-card.elite .card-name { color: var(--red2); }
+.phase-card.boss-card .card-name { color: var(--red2); font-size: 18px; }
+
+/* ============ COMBAT SCREEN ============ */
+#combat-screen {
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.combat-layout {
+  flex: 1;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 0;
+}
+
+/* Enemy area */
+.enemy-area {
+  padding: 24px;
+  background: linear-gradient(180deg, rgba(224,80,64,0.06) 0%, transparent 100%);
+  border-bottom: 1px solid var(--border);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+  align-items: start;
+}
+
+.enemy-info { flex: 1; }
+
+.enemy-name {
+  font-family: 'Cinzel', serif;
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--enemy-color);
+  margin-bottom: 8px;
+}
+
+.enemy-hp-bar {
+  width: 100%;
+  max-width: 360px;
+  height: 10px;
+  background: var(--bg3);
+  border-radius: 5px;
+  overflow: hidden;
+  margin-bottom: 4px;
+  border: 1px solid var(--border);
+}
+
+.enemy-hp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--red), var(--red2));
+  border-radius: 5px;
+  transition: width 0.4s ease;
+}
+
+.enemy-hp-text {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 13px;
+  color: var(--red2);
+}
+
+.enemy-intent {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  padding: 12px 16px;
+  min-width: 200px;
+  clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
+}
+
+.intent-title {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: 0.3em;
+  margin-bottom: 8px;
+}
+
+.intent-action {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--red2);
+  margin-bottom: 6px;
+}
+
+.intent-dice {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+/* Battle log / middle area */
+.battle-area {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  overflow: hidden;
+}
+
+.battle-log {
+  padding: 16px;
+  overflow-y: auto;
+  max-height: 280px;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.log-entry {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-left: 2px solid transparent;
+  line-height: 1.5;
+}
+
+.log-entry.damage { color: var(--red2); border-left-color: var(--red); }
+.log-entry.defend { color: var(--blue2); border-left-color: var(--blue); }
+.log-entry.system { color: var(--text3); }
+.log-entry.win { color: var(--accent); border-left-color: var(--accent); font-weight: 700; }
+.log-entry.heal { color: var(--green2); border-left-color: var(--green); }
+
+/* Dice display */
+.dice-panel {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dice-section-title {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: 0.3em;
+}
+
+.dice-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+  min-height: 44px;
+}
+
+.die {
+  width: 40px; height: 40px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Share Tech Mono', monospace;
+  font-weight: 700;
+  font-size: 16px;
+  position: relative;
+  transition: all 0.3s;
+  flex-shrink: 0;
+}
+
+.die.player-die {
+  background: rgba(64,128,224,0.15);
+  border: 2px solid var(--blue);
+  color: var(--blue2);
+}
+
+.die.enemy-die {
+  background: rgba(224,80,64,0.15);
+  border: 2px solid var(--red);
+  color: var(--red2);
+}
+
+.die.win-die {
+  background: rgba(64,200,112,0.2);
+  border-color: var(--green);
+  color: var(--green2);
+  box-shadow: 0 0 12px rgba(64,200,112,0.3);
+}
+
+.die.lose-die {
+  background: rgba(224,80,64,0.05);
+  border-color: var(--border);
+  color: var(--text3);
+}
+
+.die.rolling {
+  animation: dieRoll 0.4s ease-out;
+}
+
+@keyframes dieRoll {
+  0% { transform: rotate(-20deg) scale(1.3); }
+  60% { transform: rotate(10deg) scale(0.9); }
+  100% { transform: rotate(0) scale(1); }
+}
+
+.die-label {
+  position: absolute;
+  top: -14px;
+  font-size: 8px;
+  color: var(--text3);
+  font-family: 'Share Tech Mono', monospace;
+  white-space: nowrap;
+}
+
+/* Player area */
+.player-area {
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  padding: 16px 24px;
+}
+
+.player-hp-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--bg3);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 4px;
+  border: 1px solid var(--border);
+}
+
+.player-hp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--green), var(--green2));
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+.player-hp-text {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 13px;
+  color: var(--green2);
+  margin-bottom: 16px;
+}
+
+/* Phase label */
+.phase-label {
+  font-family: 'Cinzel', serif;
+  font-size: 12px;
+  letter-spacing: 0.3em;
+  color: var(--text3);
+  margin-bottom: 12px;
+}
+
+/* Weapon + skill selection */
+.weapon-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.weapon-btn {
+  padding: 8px 14px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
+}
+
+.weapon-btn:hover { border-color: var(--player-color); color: var(--blue2); }
+.weapon-btn.selected { border-color: var(--blue); background: rgba(64,128,224,0.15); color: var(--blue2); }
+
+.weapon-btn .w-dice {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  color: var(--text3);
+  display: block;
+  margin-top: 2px;
+}
+
+.skill-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.skill-btn {
+  padding: 6px 14px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  clip-path: polygon(4px 0, 100% 0, calc(100% - 4px) 100%, 0 100%);
+}
+
+.skill-btn:hover { border-color: var(--purple); color: var(--purple2); }
+.skill-btn.selected { border-color: var(--purple); background: rgba(144,96,224,0.15); color: var(--purple2); }
+
+.action-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.go-btn {
+  font-family: 'Cinzel', serif;
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  padding: 12px 40px;
+  background: var(--accent);
+  border: none;
+  color: #0a0c10;
+  cursor: pointer;
+  transition: all 0.15s;
+  clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+}
+
+.go-btn:hover { background: var(--accent2); transform: scale(1.03); }
+.go-btn:active { transform: scale(0.97); }
+.go-btn:disabled { background: var(--border); color: var(--text3); cursor: not-allowed; transform: none; }
+
+/* Damage number popup */
+.dmg-popup {
+  position: fixed;
+  font-family: 'Cinzel', serif;
+  font-size: 32px;
+  font-weight: 900;
+  pointer-events: none;
+  animation: dmgFloat 1.2s ease-out forwards;
+  z-index: 100;
+}
+
+.dmg-popup.player-dmg { color: var(--red2); text-shadow: 0 0 20px rgba(224,80,64,0.5); }
+.dmg-popup.enemy-dmg { color: var(--accent); text-shadow: 0 0 20px rgba(232,184,64,0.5); }
+
+@keyframes dmgFloat {
+  0% { opacity: 1; transform: translateY(0) scale(1.2); }
+  100% { opacity: 0; transform: translateY(-80px) scale(0.8); }
+}
+
+/* ============ STATUS EFFECTS ============ */
+.status-row {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  min-height: 20px;
+  margin-bottom: 8px;
+}
+
+.status-badge {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 2px;
+  background: rgba(144,96,224,0.2);
+  border: 1px solid var(--purple);
+  color: var(--purple2);
+}
+
+.status-badge.poison { background: rgba(100,200,100,0.15); border-color: #60c060; color: #80e080; }
+.status-badge.armor { background: rgba(64,128,224,0.15); border-color: var(--blue); color: var(--blue2); }
+
+/* ============ REWARD SCREEN ============ */
+#reward-screen {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 40px 24px;
+  gap: 32px;
+}
+
+.reward-title {
+  font-family: 'Cinzel', serif;
+  font-size: 32px;
+  font-weight: 900;
+  color: var(--accent);
+  text-shadow: 0 0 30px rgba(232,184,64,0.4);
+  letter-spacing: 0.2em;
+}
+
+.reward-items {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.reward-item {
+  width: 160px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  padding: 20px 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+  text-align: center;
+}
+
+.reward-item:hover {
+  border-color: var(--accent);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4), 0 0 16px rgba(232,184,64,0.1);
+}
+
+.reward-item .r-icon { font-size: 32px; margin-bottom: 8px; }
+.reward-item .r-type { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--text3); letter-spacing: 0.3em; margin-bottom: 4px; }
+.reward-item .r-name { font-family: 'Cinzel', serif; font-size: 13px; color: var(--text); margin-bottom: 4px; }
+.reward-item .r-desc { font-size: 11px; color: var(--text3); line-height: 1.4; }
+
+.reward-item.weapon .r-name { color: var(--blue2); }
+.reward-item.relic .r-name { color: var(--purple2); }
+.reward-item.heal .r-name { color: var(--green2); }
+.reward-item.gold .r-name { color: var(--accent); }
+
+/* ============ SHOP SCREEN ============ */
+#shop-screen {
+  flex-direction: column;
+  min-height: 100vh;
+  align-items: center;
+  padding: 40px 24px;
+  gap: 32px;
+}
+
+.shop-title {
+  font-family: 'Cinzel', serif;
+  font-size: 28px;
+  color: var(--green2);
+  letter-spacing: 0.2em;
+}
+
+.shop-items {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.shop-item {
+  width: 180px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  padding: 20px 16px;
+  clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+  text-align: center;
+}
+
+.shop-item .s-icon { font-size: 28px; margin-bottom: 8px; }
+.shop-item .s-name { font-family: 'Cinzel', serif; font-size: 13px; color: var(--text); margin-bottom: 4px; }
+.shop-item .s-desc { font-size: 11px; color: var(--text3); line-height: 1.4; margin-bottom: 12px; }
+.shop-item .s-price { font-family: 'Share Tech Mono', monospace; font-size: 14px; color: var(--accent); margin-bottom: 8px; }
+
+/* ============ INVENTORY / RELICS ============ */
+.inventory-panel {
+  position: fixed;
+  right: 0; top: 0; bottom: 0;
+  width: 280px;
+  background: var(--bg2);
+  border-left: 1px solid var(--border);
+  padding: 16px;
+  overflow-y: auto;
+  transform: translateX(100%);
+  transition: transform 0.3s;
+  z-index: 50;
+}
+
+.inventory-panel.open { transform: translateX(0); }
+
+/* ============ ANIMATIONS ============ */
+.flash-red {
+  animation: flashRed 0.4s ease;
+}
+
+.flash-green {
+  animation: flashGreen 0.4s ease;
+}
+
+@keyframes flashRed {
+  0% { background: rgba(224,80,64,0.4); }
+  100% { background: transparent; }
+}
+
+@keyframes flashGreen {
+  0% { background: rgba(64,200,112,0.3); }
+  100% { background: transparent; }
+}
+
+/* ============ GAME OVER ============ */
+#gameover-screen {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  gap: 32px;
+}
+
+.gameover-title {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(40px, 8vw, 80px);
+  font-weight: 900;
+  color: var(--red);
+  text-shadow: 0 0 40px rgba(224,80,64,0.5);
+  letter-spacing: 0.2em;
+  animation: flicker 2s ease-in-out infinite;
+}
+
+@keyframes flicker {
+  0%, 90%, 100% { opacity: 1; }
+  92% { opacity: 0.6; }
+  94% { opacity: 1; }
+  96% { opacity: 0.4; }
+  98% { opacity: 1; }
+}
+
+/* ============ MISC ============ */
+.separator {
+  width: 100%;
+  height: 1px;
+  background: var(--border);
+  position: relative;
+}
+
+.separator::after {
+  content: '◆';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--bg2);
+  padding: 0 8px;
+  font-size: 10px;
+  color: var(--border2);
+}
+
+.relic-list {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.relic-badge {
+  padding: 4px 10px;
+  background: rgba(144,96,224,0.15);
+  border: 1px solid var(--purple);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  color: var(--purple2);
+  cursor: help;
+  clip-path: polygon(4px 0, 100% 0, calc(100% - 4px) 100%, 0 100%);
+  transition: all 0.15s;
+}
+
+.relic-badge:hover { background: rgba(144,96,224,0.3); }
+
+/* Tooltip */
+[data-tip] { position: relative; }
+[data-tip]:hover::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  padding: 6px 10px;
+  font-size: 11px;
+  color: var(--text2);
+  white-space: nowrap;
+  z-index: 100;
+  pointer-events: none;
+  font-family: 'Rajdhani', sans-serif;
+}
+
+/* Status bar relics */
+.relic-strip {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+/* Skip btn */
+.skip-link {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px;
+  color: var(--text3);
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.skip-link:hover { color: var(--text2); }
+
+/* modal overlay */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-box {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  padding: 32px;
+  max-width: 480px;
+  width: 90%;
+  clip-path: polygon(14px 0, 100% 0, calc(100% - 14px) 100%, 0 100%);
+}
+
+.modal-title {
+  font-family: 'Cinzel', serif;
+  font-size: 20px;
+  color: var(--accent);
+  margin-bottom: 16px;
+}
+
+/* inventory toggle btn */
+.inv-toggle {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 40;
+  padding: 10px 16px;
+  font-size: 12px;
+}
+.help-toggle {
+  position: fixed;
+  right: 16px;
+  bottom: 60px;
+  z-index: 40;
+  padding: 10px 16px;
+  font-size: 12px;
+  border-color: var(--purple);
+  color: var(--purple2);
+}
+.help-toggle:hover { border-color: var(--purple2); background: rgba(144,96,224,0.1); color: var(--purple2); }
+
+/* help modal */
+#help-modal { display:none; }
+#help-modal.open { display:flex; }
+.help-tabs { display:flex; gap:4px; margin-bottom:16px; flex-wrap:wrap; }
+.help-tab {
+  font-family:'Share Tech Mono',monospace; font-size:11px;
+  padding:4px 12px; border:1px solid var(--border2); background:var(--bg3);
+  color:var(--text2); cursor:pointer; transition:all 0.15s;
+}
+.help-tab.active { border-color:var(--accent); color:var(--accent); background:rgba(232,184,64,0.08); }
+.help-content { font-family:'Rajdhani',sans-serif; font-size:13px; color:var(--text2); line-height:1.7; overflow-y:auto; max-height:60vh; }
+.help-content h3 { font-family:'Cinzel',serif; font-size:14px; color:var(--accent); margin:12px 0 6px; }
+.help-content table { width:100%; border-collapse:collapse; margin:8px 0; font-size:12px; }
+.help-content td, .help-content th { padding:4px 8px; border:1px solid var(--border); }
+.help-content th { background:var(--bg3); color:var(--text2); font-family:'Share Tech Mono',monospace; font-size:11px; }
+.help-pane { display:none; }
+.help-pane.active { display:block; }
+
+/* tooltip for items */
+.item-tooltip {
+  position:fixed;
+  background:var(--bg2);
+  border:1px solid var(--accent);
+  padding:10px 14px;
+  font-family:'Rajdhani',sans-serif;
+  font-size:12px;
+  color:var(--text);
+  z-index:500;
+  pointer-events:none;
+  max-width:260px;
+  line-height:1.6;
+  box-shadow:0 8px 24px rgba(0,0,0,0.6);
+  clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
+}
+.item-tooltip .tt-name { font-family:'Cinzel',serif; font-size:13px; color:var(--accent); margin-bottom:4px; }
+.item-tooltip .tt-type { font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--text3); margin-bottom:4px; }
+.item-tooltip .tt-desc { color:var(--text2); }
+
+.relic-badge { cursor: help; }
+
+/* resist badges */
+.resist-row {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  min-height: 18px;
+  margin-bottom: 6px;
+}
+.resist-badge {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 2px;
+  letter-spacing: 0.05em;
+  cursor: default;
+}
+.resist-badge.resist {
+  background: rgba(232,184,64,0.15);
+  border: 1px solid var(--accent);
+  color: var(--accent2);
+}
+.resist-badge.immune {
+  background: rgba(224,80,64,0.18);
+  border: 1px solid var(--red2);
+  color: var(--red2);
+}
+.resist-badge.weak {
+  background: rgba(64,200,112,0.15);
+  border: 1px solid var(--green);
+  color: var(--green2);
+}
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg2); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+/* defend phase */
+.defend-prompt {
+  background: rgba(224,80,64,0.08);
+  border: 1px solid var(--red);
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+}
+
+.defend-prompt-title {
+  font-family: 'Cinzel', serif;
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  color: var(--red2);
+  margin-bottom: 4px;
+}
+
+.defend-prompt-text {
+  font-size: 13px;
+  color: var(--text2);
+}
