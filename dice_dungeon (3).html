@@ -1147,6 +1147,7 @@ body::before {
       <div class="player-hp-bar"><div class="player-hp-fill" id="player-hp-fill"></div></div>
       <div class="player-hp-text" id="player-hp-text">50/50</div>
       <div class="status-row" id="player-status"></div>
+      <div class="status-row" id="resource-row"></div>
       <div id="combat-ui"></div>
     </div>
   </div>
@@ -1320,6 +1321,11 @@ body::before {
         <table><tr><th>状態</th><th>効果</th><th>持続</th></tr>
           <tr><td>☠ 毒 (poison)</td><td>毎ターンスタック数ダメージ</td><td>毎ターン-1スタック</td></tr>
           <tr><td>💀 呪い (curse)</td><td>毎ターンスタック数ダメージ</td><td>毎ターン-1スタック</td></tr>
+          <tr><td>🩸 出血 (bleed)</td><td>ターン終了時ダメージ。多段で増えやすい</td><td>毎ターン-1スタック</td></tr>
+          <tr><td>🛡 脆弱 (vulnerable)</td><td>防御ダイス-1(最低1)</td><td>毎ターン-1</td></tr>
+          <tr><td>🧊 凍結 (frozen)</td><td>次ターンダイス数-1</td><td>発動時に1消費</td></tr>
+          <tr><td>⚡ 感電 (shock)</td><td>一定確率でダイス失敗(1化)</td><td>毎ターン-1</td></tr>
+          <tr><td>🔥 焼却 (burn)</td><td>毎ターンダイス面数-1段階</td><td>毎ターン-1</td></tr>
         </table>
         <h3>🔖 ゲームルール</h3>
         <p>・同一武器タイプは戦闘中1本のみ使用可<br>
@@ -1632,6 +1638,10 @@ const WEAPONS = {
     desc:'鬼をも斬り裂く魔刀',
     skills:['behead','vital_strike','death_strike'], defSkills:['dodge','intercept']
   },
+  frost_staff: { id:'frost_staff', name:'氷杖', icon:'❄️', type:'staff', rarity:'rare', atkDice:[{n:4,sides:8}], defDice:[{n:2,sides:6}], desc:'凍結付与に優れる', skills:['empower','arcane_surge','reroll_spell'], defSkills:[] },
+  blood_whip: { id:'blood_whip', name:'血棘の鞭', icon:'🪢', type:'whip', rarity:'rare', atkDice:[{n:6,sides:6}], defDice:[{n:1,sides:6}], desc:'多段と出血特化', skills:['flurry','twin_strike','poison_blade'], defSkills:['dodge'] },
+  cursed_blade: { id:'cursed_blade', name:'呪剣', icon:'🗡️', type:'katana', rarity:'epic', atkDice:[{n:5,sides:10}], defDice:[{n:2,sides:6}], desc:'高火力だが疲労増加', skills:['death_strike','behead','vital_strike'], defSkills:['dodge'] },
+  fortress_shield: { id:'fortress_shield', name:'重盾', icon:'🧱', type:'shield', rarity:'rare', atkDice:[{n:1,sides:4}], defDice:[{n:6,sides:8}], desc:'守り最強だが攻めに難', skills:['iron_wall','fortress','counter'], defSkills:['iron_wall','fortress'] },
   kusanagi: {
     id:'kusanagi', name:'天叢雲剣', icon:'🔪', type:'katana', rarity:'legendary',
     atkDice:[{n:7,sides:10},{n:2,sides:8}], defDice:[{n:4,sides:8}],
@@ -1833,6 +1843,12 @@ const RELICS = [
   { id:'gold_magnet', name:'黄金の磁石', icon:'🧲', desc:'戦闘後Gold+3(重複可)', effect:'gold_magnet', stackable:true },
   { id:'void_crystal', name:'虚空の結晶', icon:'🔮', desc:'防御無視+1常時付与(重複可)', effect:'void_crystal', stackable:true },
   { id:'ancient_rune', name:'古代のルーン', icon:'🔯', desc:'毎攻撃最大値ダイス+1(重複可)', effect:'ancient_rune', stackable:true },
+,
+  { id:'fervor', name:'熱狂', icon:'🔥', desc:'疲労4以上で与ダメ+2', effect:'fervor', stackable:true },
+  { id:'ice_heart', name:'氷心', icon:'🧊', desc:'凍結無効', effect:'ice_heart' },
+  { id:'blood_feast', name:'血宴', icon:'🩸', desc:'出血敵攻撃時HP+2', effect:'blood_feast', stackable:true },
+  { id:'overfocus', name:'過集中', icon:'🎯', desc:'集中力最大時+1d6', effect:'overfocus' },
+  { id:'hex_core', name:'呪詛核', icon:'☢️', desc:'敵状態異常数に応じて+成功', effect:'hex_core' }
 ];
 
 // ============================================================
@@ -1844,7 +1860,7 @@ const RELICS = [
 const ENEMIES = {
   // Floor 1
   slime:     { id:'slime',     name:'スライム',   icon:'🟢', hp:24,  atkDice:[{n:4,sides:4}],  defDice:[{n:2,sides:4}],  gold:[2,6],   attacks:['溶解液','粘着攻撃'],
-    resist:['dagger','katana'], weak:['staff','bow'], immune:[] },   // 斬撃が効きにくい粘体、魔法・矢が効く
+    resist:['dagger','katana'], weak:['staff','bow'], immune:[], traits:['同値防御成功'] },   // 斬撃が効きにくい粘体、魔法・矢が効く
   goblin:    { id:'goblin',    name:'ゴブリン',   icon:'👺', hp:30,  atkDice:[{n:3,sides:6}],  defDice:[{n:2,sides:6}],  gold:[3,8],   attacks:['乱撃','噛みつき'],
     resist:[], weak:['greatsword','axe'], immune:[] },                // 素早いが体は脆い
   bat:       { id:'bat',       name:'コウモリ',   icon:'🦇', hp:20,  atkDice:[{n:3,sides:4}],  defDice:[{n:1,sides:4}],  gold:[1,4],   attacks:['爪撃','超音波'],
@@ -1855,7 +1871,7 @@ const ENEMIES = {
   knight:    { id:'knight',    name:'鉄騎士',    icon:'🤖', hp:50,  atkDice:[{n:2,sides:8}],  defDice:[{n:4,sides:6}],  gold:[5,12],  attacks:['鉄槌','防御突破','突撃'],
     resist:['dagger','bow'], weak:['greatsword','spear'], immune:[] }, // 鎧で刃・矢を弾く、大剣・槍は貫通
   assassin:  { id:'assassin',  name:'暗殺者',    icon:'🥷', hp:38,  atkDice:[{n:4,sides:6}], defDice:[{n:2,sides:6}],   gold:[4,10],  attacks:['影斬り','連撃','毒針'],
-    resist:['greatsword','spear'], weak:['staff','bow'], immune:[] },  // 小柄で大振りをかわす、遠距離に弱い
+    resist:['greatsword','spear'], weak:['staff','bow'], immune:[], traits:['reroll'] },  // 小柄で大振りをかわす、遠距離に弱い
   // Floor 3
   werewolf:  { id:'werewolf',  name:'狼人間',    icon:'🐺', hp:55,  atkDice:[{n:3,sides:8}],  defDice:[{n:3,sides:6}],  gold:[5,12],  attacks:['噛み砕き','爪連撃','遠吠え'],
     resist:['axe'], weak:['katana','spear'], immune:[] },              // 獣の体力、鋭い刃が効く
@@ -1881,7 +1897,7 @@ const ENEMIES = {
   fallen_angel: { id:'fallen_angel', name:'堕天使', icon:'👼', hp:130,atkDice:[{n:4,sides:10}], defDice:[{n:3,sides:10}], gold:[16,32], attacks:['神聖斬','翼嵐','堕落の光'],
     resist:['axe','greatsword'], weak:['bow','staff'], immune:[] },    // 天使、飛行体
   dragon:    { id:'dragon',    name:'翠竜',     icon:'🐉', hp:140, atkDice:[{n:4,sides:10}], defDice:[{n:4,sides:8}],  gold:[20,40], attacks:['ブレス','龍爪','尾叩き'],
-    resist:['dagger','gauntlet'], weak:['spear','greatsword'], immune:[] }, // 龍鱗が刃を弾く
+    resist:['dagger','gauntlet'], weak:['spear','greatsword'], immune:[], traits:['max追加成功','high_face_resist'] }, // 龍鱗が刃を弾く
   void_mage: { id:'void_mage', name:'虚空魔導士',icon:'🌀', hp:110, atkDice:[{n:5,sides:8}],  defDice:[{n:2,sides:10}], gold:[15,30], attacks:['虚空弾','次元斬','魔力爆発'],
     resist:['staff'], weak:['katana','dagger'], immune:[] },           // 魔法反射フィールド
   // Floor 7
@@ -1959,6 +1975,7 @@ const WEAPON_TYPE_LABEL = {
   axe:       '🪓斧',
   gauntlet:  '👊拳',
   katana:    '🔪刀',
+  whip:      '🪢鞭',
 };
 
 // 武器レアリティカラー
@@ -1989,6 +2006,8 @@ function newGame() {
     selectedSkill: null,
     usedFirstExtra: false,
     consecutiveHits: 0,
+    fatigue: 0,
+    focus: 3,
   };
 }
 
@@ -2332,7 +2351,7 @@ function startCombat(isElite, isBoss) {
 }
 
 function updateEnemyDisplay() {
-  document.getElementById('enemy-name').textContent = `${G.enemy.icon} ${G.enemy.name}`;
+  document.getElementById('enemy-name').textContent = `${G.enemy.icon} ${G.enemy.name}` + (getEnemyTraits(G.enemy).length?` [${getEnemyTraits(G.enemy).join(' / ')}]`:'' );
   const pct = G.enemy.curHp / G.enemy.hp * 100;
   document.getElementById('enemy-hp-fill').style.width = pct + '%';
   document.getElementById('enemy-hp-text').textContent = `${G.enemy.curHp}/${G.enemy.hp}`;
@@ -2371,7 +2390,7 @@ function updateEnemyDisplay() {
     if (v > 0) {
       const b = document.createElement('span');
       b.className = `status-badge ${k}`;
-      b.textContent = `${k}:${v}`;
+      const [ic,nm]=getStatusMeta(k); b.textContent = `${ic}${nm}:${v}`;
       statusEl.appendChild(b);
     }
   }
@@ -2389,7 +2408,7 @@ function updatePlayerDisplay() {
     if (v > 0) {
       const b = document.createElement('span');
       b.className = `status-badge ${k}`;
-      b.textContent = `${k}:${v}`;
+      const [ic,nm]=getStatusMeta(k); b.textContent = `${ic}${nm}:${v}`;
       statusEl.appendChild(b);
     }
   }
@@ -2409,6 +2428,7 @@ function prepareEnemyIntent() {
 
 function updateCombatUI() {
   updatePlayerDisplay();
+  updateResourceRow();
   const ui = document.getElementById('combat-ui');
   ui.innerHTML = '';
 
@@ -2594,6 +2614,23 @@ function applySkillModifiers(rolls, skillState, isAtk) {
   return result;
 }
 
+
+function getStatusMeta(k){
+  const m={poison:['☠','毒'],curse:['💀','呪い'],bleed:['🩸','出血'],vulnerable:['🛡','脆弱'],frozen:['🧊','凍結'],shock:['⚡','感電'],burn:['🔥','焼却']};
+  return m[k]||['•',k];
+}
+function getEnemyTraits(enemy){ return enemy.traits||[]; }
+function updateResourceRow(){
+  const el=document.getElementById('resource-row'); if(!el) return;
+  el.innerHTML=`<span class="status-badge armor">疲労:${G.fatigue}</span><span class="status-badge poison">集中:${G.focus}</span>`;
+}
+function applyDiceStatusEffects(target, rolls){
+  let r=[...rolls];
+  if ((target.statuses?.shock||0)>0) r=r.map(d=> Math.random()<0.2 ? {...d,val:1,shocked:true}:d);
+  if ((target.statuses?.burn||0)>0){ const tiers=[4,6,8,10,12,20]; r=r.map(d=>{ const i=tiers.indexOf(d.sides); const ns=i>0?tiers[i-1]:d.sides; return {...d,sides:ns,val:Math.min(d.val,ns)}; }); }
+  return r;
+}
+
 function compareDice(atkRolls, defRolls, skillState) {
   let atk = [...atkRolls].sort((a,b) => b.val - a.val);
   let def = [...defRolls].sort((a,b) => b.val - a.val);
@@ -2709,13 +2746,15 @@ async function executePlayerAttack() {
     pendingCurse: 0, lifeSteal: 0,
   };
 
-  if (G.selectedSkill) SKILLS[G.selectedSkill].apply(skillState);
+  if (G.selectedSkill) { SKILLS[G.selectedSkill].apply(skillState); G.fatigue += 2; G.focus = Math.max(0,G.focus-1);} else { G.focus=Math.min(5,G.focus+1); G.fatigue=Math.max(0,G.fatigue-1);} 
 
   // Build attack dice
   const baseAtk = buildDiceList(G.selectedWeapon, true, skillState);
   let atkRolls = rollDice(baseAtk);
   atkRolls = applyRelicsToDice(atkRolls, G.relics);
   atkRolls = applySkillModifiers(atkRolls, skillState, true);
+  if (G.fatigue>=4) { atkRolls.pop(); addLog('疲労で攻撃ダイス-1','damage'); }
+  if (G.fatigue>=6) skillState.maxValBonus=0;
 
   // glass_cannon bonus: +2 if no def dice equipped (重複分加算)
   if (G.relics.includes('glass_cannon')) {
@@ -2739,7 +2778,9 @@ async function executePlayerAttack() {
   }
 
   // Enemy defends
+  atkRolls = applyDiceStatusEffects(G, atkRolls);
   let defRolls = rollDice(G.enemy.defDice);
+  defRolls = applyDiceStatusEffects(G.enemy, defRolls);
 
   await sleep(200);
   displayDice(atkRolls, 'atk-dice-display', 'player-die');
@@ -2764,6 +2805,8 @@ async function executePlayerAttack() {
     const resistTypes = enemy.resist || [];
     const weakTypes   = enemy.weak   || [];
 
+    if (G.enemy.traits?.includes('high_face_resist') && atkRolls.some(d=>d.sides>=10)) { dmg=Math.max(0,dmg-2); addLog('敵特性:高面数耐性 -2','defend'); }
+    if (G.enemy.traits?.includes('surplus_nullify')) { dmg=Math.min(dmg, defRolls.length); addLog('敵特性:余剰成功無効','defend'); }
     if (immuneTypes.includes(weapType)) {
       addLog(`🚫 ${enemy.name} は ${WEAPON_TYPE_LABEL[weapType]||weapType} を無効化！ダメージ0`, 'defend');
       dmg = 0;
@@ -2776,6 +2819,9 @@ async function executePlayerAttack() {
       addLog(`⚡ ${enemy.name} は ${WEAPON_TYPE_LABEL[weapType]||weapType} が弱点！ ${dmg}→${boosted}`, 'win');
       dmg = boosted;
     }
+    if (dmg>0 && ['whip','katana','dagger'].includes(weapType)) G.enemy.statuses.bleed=(G.enemy.statuses.bleed||0)+1;
+    if (dmg>0 && weapType==='spear') G.enemy.statuses.shock=(G.enemy.statuses.shock||0)+1;
+    if (dmg>0 && weapType==='staff') G.enemy.statuses.frozen=(G.enemy.statuses.frozen||0)+1;
     if (skillState.pendingPoison > 0 && dmg > 0) {
       G.enemy.statuses.poison = (G.enemy.statuses.poison||0) + skillState.pendingPoison;
       addLog(`毒 ${skillState.pendingPoison} 付与！`, 'system');
@@ -2830,6 +2876,7 @@ async function executePlayerAttack() {
     addLog(`☠ 毒ダメージ: ${poisonDmg}`, 'damage');
     updateEnemyDisplay();
   }
+  if (G.enemy.statuses.bleed > 0) { const b=G.enemy.statuses.bleed; G.enemy.curHp=Math.max(0,G.enemy.curHp-b); G.enemy.statuses.bleed=Math.max(0,b-1); addLog(`🩸 出血ダメージ: ${b}`,'damage'); updateEnemyDisplay(); }
   if (G.enemy.statuses.curse > 0) {
     const curseDmg = G.enemy.statuses.curse;
     G.enemy.curHp = Math.max(0, G.enemy.curHp - curseDmg);
@@ -2856,7 +2903,7 @@ async function executePlayerDefend() {
     dmgReduction: 0, counterDmg: false, counterOnDef: false
   };
 
-  if (G.selectedSkill) SKILLS[G.selectedSkill].apply(skillState);
+  if (G.selectedSkill) { SKILLS[G.selectedSkill].apply(skillState); G.fatigue += 2; G.focus = Math.max(0,G.focus-1);} else { G.focus=Math.min(5,G.focus+1); G.fatigue=Math.max(0,G.fatigue-1);} 
 
   // iron_will relic: -2 per stack dmg if HP low
   if (G.relics.includes('iron_will') && G.hp <= 20) {
